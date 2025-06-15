@@ -1,53 +1,53 @@
 class Todo {
-  constructor(data, selector) {
+  constructor(data, templateSelector) {
     this._data = data;
-    this._templateElement = document.querySelector(selector);
+    this._templateEl = document.querySelector(templateSelector).content;
   }
 
   _setEventListeners() {
-    this._todoCheckboxEl.addEventListener("change", () => {
-      this._data.completed = this._todoCheckboxEl.checked;
+    this._checkbox.addEventListener("change", () => {
+      this._data.completed = this._checkbox.checked;
+      this._onToggle && this._onToggle(this._checkbox.checked);
     });
 
-    this._todoDeleteBtn.addEventListener("click", () => {
-      this._todoElement.remove();
+    this._deleteBtn.addEventListener("click", () => {
+      this._element.remove();
+      this._onDelete && this._onDelete(this._checkbox.checked);
     });
   }
 
-  _generateCheckboxEl() {
-    this._todoDate = this._todoElement.querySelector(".todo__date");
-    this._todoDeleteBtn = this._todoElement.querySelector(".todo__delete-btn");
-    this._todoCheckboxEl = this._todoElement.querySelector(".todo__completed");
-    this._todoLabel = this._todoElement.querySelector(".todo__label");
+  _populateFields() {
+    this._element.querySelector(".todo__name").textContent = this._data.name;
 
-    this._todoCheckboxEl.checked = this._data.completed;
-    this._todoCheckboxEl.id = `todo-${this._data.id}`;
-    this._todoLabel.setAttribute("for", `todo-${this._data.id}`);
+    const dateSpan = this._element.querySelector(".todo__date");
+    const parsed = new Date(this._data.date);
+    dateSpan.textContent = isNaN(parsed)
+      ? ""
+      : `Due: ${parsed.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}`;
 
-    const dueDate = new Date(this._data.date);
-    if (!isNaN(dueDate)) {
-      this._todoDate.textContent = `Due: ${dueDate.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })}`;
-    } else {
-      this._todoDate.textContent = "";
-    }
+    this._checkbox = this._element.querySelector(".todo__completed");
+    this._deleteBtn = this._element.querySelector(".todo__delete-btn");
+    this._label = this._element.querySelector(".todo__label");
+
+    this._checkbox.checked = !!this._data.completed;
+    this._checkbox.id = `todo-${this._data.id}`;
+    this._label.setAttribute("for", `todo-${this._data.id}`);
   }
 
-  getview() {
-    this._todoElement = this._templateElement.content
-      .querySelector(".todo")
-      .cloneNode(true);
+  setCallbacks(onToggle, onDelete) {
+    this._onToggle = onToggle;
+    this._onDelete = onDelete;
+  }
 
-    const todoNameEl = this._todoElement.querySelector(".todo__name");
-    todoNameEl.textContent = this._data.name;
-
-    this._generateCheckboxEl();
+  getView() {
+    this._element = this._templateEl.querySelector(".todo").cloneNode(true);
+    this._populateFields();
     this._setEventListeners();
-
-    return this._todoElement;
+    return this._element;
   }
 }
 
