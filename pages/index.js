@@ -6,28 +6,17 @@ import FormValidator from "../components/FormValidator.js";
 import PopupWithForm from "../components/PopupWithForm.js";
 import TodoCounter from "../components/TodoCounter.js";
 
-const generateTodo = (data, counterInstance) => {
-  const todo = new Todo(data, "#todo-template").getView();
+const generateTodo = (data, counter) => {
+  const todo = new Todo(data, "#todo-template");
+  todo.setCallbacks(
+    (completed) => counter.updateCompleted(completed),
+    (wasCompleted) => {
+      counter.updateTotal(false);
+      if (wasCompleted) counter.updateCompleted(false);
+    }
+  );
 
-  const checkbox = todo.querySelector(".todo__checkbox");
-  if (checkbox) {
-    checkbox.checked = !!data.completed;
-    checkbox.addEventListener("change", (e) => {
-      counterInstance.updateCompleted(e.target.checked);
-    });
-  }
-
-  const delBtn = todo.querySelector(".todo__delete");
-  if (delBtn) {
-    delBtn.addEventListener("click", () => {
-      const wasCompleted = checkbox ? checkbox.checked : false;
-      todo.remove();
-      counterInstance.updateTotal(false);
-      if (wasCompleted) counterInstance.updateCompleted(false);
-    });
-  }
-
-  return todo;
+  return todo.getView();
 };
 
 const todoCounter = new TodoCounter(initialTodos, ".counter__text");
@@ -38,11 +27,12 @@ const section = new Section({
   containerSelector: ".todos__list",
 });
 section.renderItems();
+
 const addTodoPopup = new PopupWithForm("#add-todo-popup", (values) => {
   const newTodo = {
     id: uuidv4(),
     name: values.name,
-    date: new Date(values.date).toISOString(),
+    date: values.date ? new Date(values.date).toISOString() : "",
     completed: false,
   };
 
@@ -50,6 +40,7 @@ const addTodoPopup = new PopupWithForm("#add-todo-popup", (values) => {
   todoCounter.updateTotal(true);
   addTodoPopup.close();
 });
+
 addTodoPopup.setEventListeners();
 
 document

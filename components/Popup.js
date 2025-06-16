@@ -25,9 +25,14 @@ class Popup {
   }
 
   setEventListeners() {
-    this._popup
-      .querySelector(".popup__close")
-      .addEventListener("click", () => this.close());
+    this._popup.addEventListener("mousedown", (evt) => {
+      const isOverlayClick = evt.target === this._popup;
+      const isCloseBtnClick = evt.target.classList.contains("popup__close");
+
+      if (isOverlayClick || isCloseBtnClick) {
+        this.close();
+      }
+    });
 
     this._popup.addEventListener("mousedown", (evt) => {
       if (evt.target === this._popup) {

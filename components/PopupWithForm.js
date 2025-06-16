@@ -1,11 +1,11 @@
 import Popup from "./Popup.js";
 
 class PopupWithForm extends Popup {
-  constructor(selector, handleFormSubmit) {
-    super(selector);
-    this._handleFormSubmit = handleFormSubmit;
+  constructor(popupSelector, handleFormSubmit) {
+    super(popupSelector);
     this._form = this._popup.querySelector("form");
-    this._inputList = Array.from(this._form.querySelectorAll("input"));
+    this._handleFormSubmit = handleFormSubmit;
+    this._inputList = this._form.querySelectorAll("input");
   }
 
   _getInputValues() {
@@ -18,15 +18,16 @@ class PopupWithForm extends Popup {
 
   setEventListeners() {
     super.setEventListeners();
-    this._form.addEventListener("submit", (evt) => {
-      evt.preventDefault();
-      this._handleFormSubmit(this._getInputValues());
-    });
-  }
 
-  close() {
-    super.close();
-    this._form.reset();
+    if (this._form) {
+      this._form.addEventListener("submit", (evt) => {
+        evt.preventDefault();
+        const inputValues = this._getInputValues();
+        this._handleFormSubmit(inputValues);
+
+        this._form.reset();
+      });
+    }
   }
 }
 
